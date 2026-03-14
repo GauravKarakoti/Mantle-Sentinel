@@ -66,7 +66,6 @@ export const MANTLE_TOKENS: MantleToken[] = [
 ];
 
 const ERC20_BALANCE_OF = "0x70a08231"; // balanceOf(address)
-const ERC20_BALANCE_OF_ARG_LEN = 64;
 
 function encodeBalanceOf(userAddress: string): string {
   return ERC20_BALANCE_OF + userAddress.slice(2).toLowerCase().padStart(64, "0");
@@ -139,14 +138,23 @@ export async function fetchPortfolioFromRpc(
     ),
   ]);
 
-  const nativeHex = nativeRes?.result ?? "0x0";
+  let nativeHex = nativeRes?.result;
+  if (!nativeHex || nativeHex === "0x") {
+    nativeHex = "0x0";
+  }
   const nativeBalance = BigInt(nativeHex);
   const nativeBalanceFormatted = formatUnits(nativeBalance, 18);
 
   const tokens: TokenBalance[] = [];
   MANTLE_TOKENS.forEach((t, i) => {
     const res = tokenResps[i];
-    const hex = res?.result ?? "0x0";
+    
+    // FIX 2: Handle ERC20 balance response safely
+    let hex = res?.result;
+    if (!hex || hex === "0x") {
+      hex = "0x0";
+    }
+    
     const balance = BigInt(hex);
     if (balance > 0n) {
       tokens.push({
