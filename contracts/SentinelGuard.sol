@@ -23,7 +23,7 @@ contract SentinelGuard {
      * @notice Example guard function that would be called by a DAO / vault / smart account
      *         before executing a sensitive action.
      * @param owner The address whose policy should be enforced (e.g. DAO treasury)
-     * @param resultingProtocolExposureBps Resulting single‑protocol exposure after the action (in basis points)
+     * @param resultingProtocolExposureBps Resulting single-protocol exposure after the action (in basis points)
      * @param resultingLeverageBps Resulting leverage after the action (in basis points)
      * @param hasRecentRecommendation Whether an offchain service has recently logged an AI recommendation
      */

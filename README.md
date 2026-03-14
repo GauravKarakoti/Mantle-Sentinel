@@ -1,6 +1,6 @@
-## Mantle Sentinel – AI Risk & Strategy Co‑Pilot
+## Mantle Sentinel – AI Risk & Strategy Co-Pilot
 
-**One-liner**: Mantle Sentinel is an AI-powered onchain risk and strategy co‑pilot that helps Mantle users, DAOs, and treasuries understand their positions, set smart guardrails, and execute safer DeFi actions on Mantle with auditable AI recommendations.
+**One-liner**: Mantle Sentinel is an AI-powered onchain risk and strategy co-pilot that helps Mantle users, DAOs, and treasuries understand their positions, set smart guardrails, and execute safer DeFi actions on Mantle with auditable AI recommendations.
 
 ---
 
@@ -11,22 +11,22 @@
 - **DeFi on Mantle is fast and cheap, but cognitively expensive.**
   - Users struggle to understand protocol risks, concentration, and liquidation exposure across apps.
   - Treasuries and DAOs lack structured, repeatable risk policies that can be enforced onchain.
-  - Even sophisticated users end up copy‑trading or reacting to CT sentiment instead of data.
+  - Even sophisticated users end up copy-trading or reacting to CT sentiment instead of data.
 - **AI tools today are mostly offchain and “advisory only”.**
   - They summarize, but don’t connect tightly to real onchain positions.
   - There is no clear, verifiable link between “what the AI said” and “what we actually executed”.
 
 **Target users**
 
-- **Power users & farmers on Mantle**: want an always‑on AI co‑pilot to explain risk, gas‑optimize, and suggest next steps before signing.
-- **DAOs / protocol treasuries**: want enforceable guardrails and AI‑assisted rebalancing while maintaining human accountability.
-- **Builders & integrators**: want a plug‑and‑play “risk + strategy AI module” they can embed into wallets, frontends, and vaults.
+- **Power users & farmers on Mantle**: want an always-on AI co-pilot to explain risk, gas-optimize, and suggest next steps before signing.
+- **DAOs / protocol treasuries**: want enforceable guardrails and AI-assisted rebalancing while maintaining human accountability.
+- **Builders & integrators**: want a plug-and-play “risk + strategy AI module” they can embed into wallets, frontends, and vaults.
 
 **Core problems solved**
 
-- Make risk and strategy **explainable, contextual, and action‑able** at the transaction level.
-- Encode human‑approved risk rules **onchain**, so AI suggestions can’t easily violate policy.
-- Turn AI from a loose offchain helper into a **first‑class, auditable primitive on Mantle**.
+- Make risk and strategy **explainable, contextual, and action-able** at the transaction level.
+- Encode human-approved risk rules **onchain**, so AI suggestions can’t easily violate policy.
+- Turn AI from a loose offchain helper into a **first-class, auditable primitive on Mantle**.
 
 ---
 
@@ -34,33 +34,33 @@
 
 **High-level description**
 
-- **Mantle Sentinel** is an AI‑powered layer that:
+- **Mantle Sentinel** is an AI-powered layer that:
   - Reads a user’s positions and recent activity on Mantle.
   - Uses an AI model to assess risk, generate scenarios, and propose actions.
-  - Enforces human‑defined onchain policies via smart contracts (“Guardrails”).
+  - Enforces human-defined onchain policies via smart contracts (“Guardrails”).
   - Stores a hash of AI recommendations onchain so they are auditable and provable.
 
 **Key capabilities**
 
-- **Transaction Co‑Pilot**
+- **Transaction Co-Pilot**
   - Before a user confirms a DeFi tx, Sentinel simulates the effect on:
     - Collateral ratios, protocol exposure, and concentration.
     - Yield vs risk tradeoffs.
   - AI responds with a natural language summary:
     - “If you proceed, your liquidation price moves from X to Y.”
     - “This increases your exposure to Protocol Z from 12% to 28%.”
-  - The summary + a machine‑readable recommendation are hashed and stored onchain.
+  - The summary + a machine-readable recommendation are hashed and stored onchain.
 
 - **Policy Guardrails for DAOs**
   - DAOs define risk policies onchain (e.g. max exposure per asset, per protocol, or LP).
   - Sentinel’s contracts check any treasury action against these policies.
-  - AI suggests compliant actions (e.g. rebalancing, de‑risking, yield rotation) but cannot bypass policy.
+  - AI suggests compliant actions (e.g. rebalancing, de-risking, yield rotation) but cannot bypass policy.
 
 - **Strategy Templates**
   - Curated “playbooks” like:
     - Conservative yield strategy.
-    - Market‑neutral farming.
-    - Volatility‑aware rotating strategy.
+    - Market-neutral farming.
+    - Volatility-aware rotating strategy.
   - AI tailors these templates to each wallet or treasury based on holdings and recent behavior.
 
 ---
@@ -69,18 +69,18 @@
 
 **Network assumptions**
 
-- Sentinel is designed for **Mantle Network (EVM‑compatible)** and leverages:
-  - Cheap, high‑throughput transactions to **store AI recommendation hashes and policy states**.
+- Sentinel is designed for **Mantle Network (EVM-compatible)** and leverages:
+  - Cheap, high-throughput transactions to **store AI recommendation hashes and policy states**.
   - Mantle ecosystem DeFi protocols (DEXs, money markets, yield vaults) as integration points.
 
 **Core smart contracts**
 
 1. **`SentinelPolicyRegistry`**
-   - Stores **per‑address or per‑DAO risk policy configs**, e.g.:
+   - Stores **per-address or per-DAO risk policy configs**, e.g.:
      - Allowed asset list.
      - Max protocol exposure percentages.
      - Max leverage per collateral type.
-     - Requirements for additional approvals (e.g. multi‑sig threshold).
+     - Requirements for additional approvals (e.g. multi-sig threshold).
    - Exposes view methods for wallets/frontends to check if an intended action is compliant.
 
 2. **`SentinelRecommendationLog`**
@@ -92,7 +92,7 @@
      - `riskLevel`: standardized bucket (e.g. 0–5).
    - Enables:
      - Auditing: “What did the AI say before this was executed?”
-     - Accountability: DAOs can require that high‑risk actions have a recommendation record.
+     - Accountability: DAOs can require that high-risk actions have a recommendation record.
 
 3. **`SentinelGuard`**
    - Lightweight guard contract that can sit in front of DAOs / vaults / smart accounts.
@@ -112,24 +112,24 @@
 - **Offchain AI → onchain**
   - AI model runs in offchain infra (Scribble, your own infra, or other AI providers).
   - For each user interaction:
-    - Computes human‑readable explanation + machine recommendation.
+    - Computes human-readable explanation + machine recommendation.
     - Posts hashed summary via `SentinelRecommendationLog` for auditability.
 
 - **Onchain enforcement**
-  - Wallets, vaults, and DAOs integrate with `SentinelGuard` as a policy‑aware execution layer.
+  - Wallets, vaults, and DAOs integrate with `SentinelGuard` as a policy-aware execution layer.
   - Transactions that violate policy revert before execution.
 
 **Where Mantle specifically matters**
 
 - **Low fees** → feasible to log recommendation metadata onchain as a primitive.
-- **Growing DeFi base** → high leverage for a risk/strategy co‑pilot that can plug into many protocols.
+- **Growing DeFi base** → high leverage for a risk/strategy co-pilot that can plug into many protocols.
 - **EVM tooling** → reuse existing Solidity, Hardhat, and signer flows for fast integration.
 
 ---
 
 ### 4. User Journeys & Flows
 
-**A. Power User: Transaction Co‑Pilot**
+**A. Power User: Transaction Co-Pilot**
 
 1. User connects wallet to a Mantle dApp that has integrated Sentinel.
 2. dApp fetches:
@@ -156,7 +156,7 @@
 1. DAO deploys `SentinelGuard` for its treasury or operations wallet.
 2. DAO defines policies in `SentinelPolicyRegistry`:
    - Max 20% in any single protocol.
-   - Min 30% in stable, low‑volatility assets.
+   - Min 30% in stable, low-volatility assets.
    - High risk actions require an extra signer.
 3. Sentinel AI runs periodic scans:
    - Detects policy drift (e.g. exposure to a particular protocol crept to 35%).
@@ -168,7 +168,7 @@
    - Review onchain recommendation logs.
    - See which signers repeatedly push risky actions against AI advice.
 
-**C. Builder / Integrator: Plug‑In Module**
+**C. Builder / Integrator: Plug-In Module**
 
 - Provide an **SDK** + simple UI components:
   - React hooks for fetching Sentinel recommendations.
@@ -179,20 +179,20 @@
 
 ### 5. Architecture & Components
 
-**High‑level architecture**
+**High-level architecture**
 
 - **Frontend (dApp / widget)**
   - Connects to Mantle via wallet.
   - Displays portfolio analysis, risk summaries, and AI suggestions.
-  - Integrates with `SentinelGuard` for policy‑aware tx construction.
+  - Integrates with `SentinelGuard` for policy-aware tx construction.
 
 - **Backend / Indexer**
-  - Subscribes to Mantle RPC, Mantle explorers, and/or The Graph‑style subgraphs.
+  - Subscribes to Mantle RPC, Mantle explorers, and/or The Graph-style subgraphs.
   - Maintains structured position data per address.
   - Provides normalized inputs for AI models.
 
 - **AI Layer**
-  - LLM or domain‑specialized model (e.g. fine‑tuned on DeFi risk cases).
+  - LLM or domain-specialized model (e.g. fine-tuned on DeFi risk cases).
   - Responsible for:
     - Summaries & explanations.
     - Risk categorization and scenario analysis.
@@ -201,7 +201,7 @@
 - **Onchain Contracts (Mantle)**
   - `SentinelPolicyRegistry` – policy storage.
   - `SentinelRecommendationLog` – audit trail of AI guidance.
-  - `SentinelGuard` – gatekeeper for high‑impact actions.
+  - `SentinelGuard` – gatekeeper for high-impact actions.
 
 **Example flow diagram (conceptual)**
 
@@ -229,22 +229,22 @@ flowchart LR
 
 - **For DAOs and protocols**
   - Codify long PDF risk frameworks into onchain policies that actually gate execution.
-  - Get proactive AI‑generated rebalancing and de‑risking suggestions.
-  - Maintain a public record of AI guidance for governance transparency and after‑action reviews.
+  - Get proactive AI-generated rebalancing and de-risking suggestions.
+  - Maintain a public record of AI guidance for governance transparency and after-action reviews.
 
 - **For the Mantle ecosystem**
   - Elevate the safety and professionalism of DeFi on Mantle.
   - Attract more institutional or cautious capital by offering strong risk tooling.
-  - Provide a shared AI‑risk primitive that many protocols can reuse instead of re‑inventing.
+  - Provide a shared AI-risk primitive that many protocols can reuse instead of re-inventing.
 
 ---
 
 ### 7. Originality & Differentiation
 
-- **Onchain AI audit trail**: Most AI helpers are invisible and offchain. Sentinel bakes AI advice into the execution path via **onchain recommendation hashes and policy‑aware guards**.
-- **Policy‑first design**: Human policies come first, AI suggestions must comply with them. This aligns with how real‑world risk committees work.
+- **Onchain AI audit trail**: Most AI helpers are invisible and offchain. Sentinel bakes AI advice into the execution path via **onchain recommendation hashes and policy-aware guards**.
+- **Policy-first design**: Human policies come first, AI suggestions must comply with them. This aligns with how real-world risk committees work.
 - **Composable primitive for Mantle**: Sentinel isn’t a single app – it’s a **set of contracts + SDK** that any Mantle dApp, wallet, or DAO can embed.
-- **Explainability as a first‑class feature**: The goal is not just better decisions, but **better understanding** of risk and strategy over time.
+- **Explainability as a first-class feature**: The goal is not just better decisions, but **better understanding** of risk and strategy over time.
 
 ---
 
@@ -252,7 +252,7 @@ flowchart LR
 
 - **Where AI helped**
   - AI (this assistant) was used to:
-    - Brainstorm and refine the concept of an AI‑powered risk & strategy tool on Mantle.
+    - Brainstorm and refine the concept of an AI-powered risk & strategy tool on Mantle.
     - Structure the problem statement, architecture, and user journeys.
     - Draft this README content and initial project scaffolding.
 - **Where human direction matters**
@@ -284,7 +284,7 @@ This repo will gradually implement Mantle Sentinel as a real tool.
   - Frontend (e.g. Next.js / React) for:
     - User dashboard.
     - Policy editor for DAOs.
-    - Transaction co‑pilot UI.
+    - Transaction co-pilot UI.
 - `backend/`
   - Indexer + API feeding normalized data into AI models.
 - `ai/`
@@ -305,18 +305,18 @@ This repo will gradually implement Mantle Sentinel as a real tool.
 
 - **Medium term**
   - Integrate with one or two flagship Mantle DeFi protocols.
-  - Replace mocked AI with a production LLM or fine‑tuned model.
+  - Replace mocked AI with a production LLM or fine-tuned model.
   - Design a governance process for how DAOs update and version their risk policies.
 
 - **Long term**
-  - Create a shared, open standard for **AI‑annotated transactions** on Mantle.
+  - Create a shared, open standard for **AI-annotated transactions** on Mantle.
   - Offer Sentinel as a reusable “AI safety layer” for any Mantle dApp or wallet.
 
 ---
 
 ### 11. How to Run the Demo Prototype
 
-This repo already includes a minimal end‑to‑end prototype suitable for the bounty demo.
+This repo already includes a minimal end-to-end prototype suitable for the bounty demo.
 
 - **Install dependencies**
 
@@ -392,7 +392,7 @@ This section explicitly maps Mantle’s 7 judging criteria to what is in this re
   - The demo shows concrete flows: setting guardrails, seeing risk snapshots, and (mock) AI guidance that can plug into real protocols over time.
 
 - **3. Originality**
-  - The concept treats “AI advice” as an onchain primitive with auditable hashes and policy‑aware guards, rather than a pure offchain chatbot.
+  - The concept treats “AI advice” as an onchain primitive with auditable hashes and policy-aware guards, rather than a pure offchain chatbot.
   - It is designed as a composable layer (contracts + SDK + UI pattern) that any Mantle dApp or wallet can embed, instead of a single siloed app.
 
 - **4. Clarity & Depth**
@@ -400,16 +400,16 @@ This section explicitly maps Mantle’s 7 judging criteria to what is in this re
   - The repo includes both narrative and actual code (contracts, scripts, frontend) so judges can see the concept translated into implementation details.
 
 - **5. Your Voice, Your Work**
-  - This concept is intended to be opinionated: prioritizing policy‑first risk management and explainability over pure yield‑maximization.
+  - This concept is intended to be opinionated: prioritizing policy-first risk management and explainability over pure yield-maximization.
   - You can further emphasize your own voice by adding a short personal intro at the top and any edits or protocol choices you make; AI’s role is documented in section 8.
 
 - **6. Engagement & Reach**
   - Sentinel is designed to be easy to demo live: connect a wallet, set a policy, fire the mock AI, and show how onchain logs and guards would work in real DAOs.
-  - It naturally creates discussion around “AI‑annotated transactions” on Mantle and how different protocols might plug into a shared safety layer.
+  - It naturally creates discussion around “AI-annotated transactions” on Mantle and how different protocols might plug into a shared safety layer.
 
 - **7. Transparency**
   - Section 8 of this README clearly explains how AI assisted in creating this submission and which decisions remain yours.
-  - The architecture itself is transparent: AI inputs and outputs are hashed and logged onchain, and human‑defined policies are visible and enforceable.
+  - The architecture itself is transparent: AI inputs and outputs are hashed and logged onchain, and human-defined policies are visible and enforceable.
 
 ---
 

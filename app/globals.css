@@ -1,4 +1,8 @@
-@import 'tailwindcss';
+@import "tailwindcss";
+
+/* Explicitly tell Tailwind v4 where to scan for classes (fixes Next.js 15 detection) */
+@source "./**/*.tsx";
+@source "./**/*.jsx";
 
 *,
 *::before,

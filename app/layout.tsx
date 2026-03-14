@@ -10,7 +10,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body className="min-h-screen bg-slate-950 text-slate-50">
-        <main className="max-w-4xl mx-auto px-4 py-8">{children}</main>
+        <main className="mx-auto px-8 py-8">{children}</main>
       </body>
     </html>
   );

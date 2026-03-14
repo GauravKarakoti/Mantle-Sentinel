@@ -182,7 +182,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen p-6 md:p-12 lg:p-24 max-w-5xl mx-auto space-y-12">
+    <div>
       {/* HEADER SECTION */}
       <section className="space-y-6 text-center md:text-left flex flex-col md:flex-row items-center justify-between">
         <div className="space-y-4 max-w-2xl">
@@ -196,7 +196,7 @@ export default function HomePage() {
             Mantle Sentinel
           </h1>
           <p className="text-slate-400 text-lg leading-relaxed">
-            An AI‑powered risk and strategy co‑pilot for Mantle. Set onchain guardrails
+            An AI-powered risk and strategy co-pilot for Mantle. Set onchain guardrails
             that your future transactions must respect, and pair them with AI
             recommendations and explanations.
           </p>
@@ -335,7 +335,7 @@ export default function HomePage() {
         <div className="space-y-8">
           <section className="card p-6 md:p-8 space-y-6 h-full flex flex-col">
             <div>
-              <h2 className="text-2xl font-semibold mb-2">AI Co‑Pilot Simulator</h2>
+              <h2 className="text-2xl font-semibold mb-2">AI Co-Pilot Simulator</h2>
               <p className="text-sm text-slate-400">
                 Test the offchain AI evaluation loop before it logs to the contract.
               </p>
