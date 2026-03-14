@@ -10,8 +10,8 @@
     "lint": "next lint",
     "test": "echo \"No tests yet\"",
     "compile:contracts": "hardhat compile",
-    "deploy:mantle_testnet": "hardhat run scripts/deploy.cjs --network mantle_testnet",
-    "mock:recommendation": "hardhat run scripts/mockRecommendation.ts --network mantle_testnet"
+    "deploy:mantle": "hardhat run scripts/deploy.cjs --network mantle",
+    "mock:recommendation": "hardhat run scripts/mockRecommendation.ts --network mantle"
   },
   "dependencies": {
     "dotenv": "^17.3.1",
