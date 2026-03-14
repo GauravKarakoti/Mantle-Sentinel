@@ -20,7 +20,10 @@ async function main() {
   );
 
   const Guard = await hre.ethers.getContractFactory("SentinelGuard");
-  const guard = await Guard.deploy(await policyRegistry.getAddress());
+  const guard = await Guard.deploy(
+    await policyRegistry.getAddress(),
+    await recommendationLog.getAddress()
+  );
   await guard.waitForDeployment();
   console.log("SentinelGuard deployed to:", await guard.getAddress());
 }
