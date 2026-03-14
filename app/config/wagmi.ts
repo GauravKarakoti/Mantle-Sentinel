@@ -12,7 +12,7 @@ export const config = getDefaultConfig({
   ssr: true,
   transports: {
     [mantle.id]: http(
-      process.env.NEXT_PUBLIC_NEXT_PUBLIC_MANTLE_RPC_URL ?? "https://rpc.mantle.xyz"
+      process.env.NEXT_PUBLIC_MANTLE_RPC_URL ?? "https://rpc.mantle.xyz"
     ),
   },
 });

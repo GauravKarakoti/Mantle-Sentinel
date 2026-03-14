@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { fetchPortfolio } from "@/lib/mantle-tokens";
+import { fetchPortfolio } from "../../../lib/mantle-tokens";
 
 const MANTLE_RPC =
   process.env.NEXT_PUBLIC_MANTLE_RPC_URL ?? "https://rpc.mantle.xyz";

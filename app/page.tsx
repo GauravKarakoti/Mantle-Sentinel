@@ -581,7 +581,7 @@ export default function HomePage() {
         </div>
 
         <div className="space-y-8">
-          <section className="card p-6 md:p-8 space-y-6 h-full flex flex-col">
+          <section className="card p-6 md:p-8 space-y-6 flex flex-col">
             <div>
               <h2 className="text-2xl font-semibold mb-2">AI Co-Pilot Simulator</h2>
               <p className="text-sm text-slate-400">

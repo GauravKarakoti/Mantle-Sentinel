@@ -8,10 +8,12 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "echo \"No tests yet\"",
+    "test": "npm run test:contracts && npm run test:ui",
+    "test:contracts": "hardhat test",
+    "test:ui": "jest",
     "compile:contracts": "hardhat compile",
     "deploy:mantle": "hardhat run scripts/deploy.cjs --network mantle",
-    "mock:recommendation": "hardhat run scripts/mockRecommendation.ts --network mantle"
+    "mock:recommendation": "hardhat run scripts/mockRecommendation.cjs --network mantle"
   },
   "dependencies": {
     "@rainbow-me/rainbowkit": "^2.2.10",
@@ -30,8 +32,13 @@
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/react": "^19.2.14",
     "hardhat": "^2.22.0",
+    "jest": "^30.3.0",
+    "jest-environment-jsdom": "^30.3.0",
+    "ts-jest": "^29.4.6",
     "typescript": "^5.7.0"
   },
   "type": "module"
