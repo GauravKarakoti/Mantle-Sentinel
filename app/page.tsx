@@ -30,12 +30,12 @@ export default function HomePage() {
     { 
       label: "Transfer (ERC20)", 
       signature: "function transfer(address to, uint256 amount)", 
-      args: [{ name: "to", placeholder: "0x..." }, { name: "amount", placeholder: "e.g. 1000000000000000000" }] 
+      args: [{ name: "to", placeholder: "0x..." }, { name: "amount in wei(10^18)", placeholder: "e.g. 1000000000000000000" }] 
     },
     { 
       label: "Approve (ERC20)", 
       signature: "function approve(address spender, uint256 amount)", 
-      args: [{ name: "spender", placeholder: "0x..." }, { name: "amount", placeholder: "e.g. 1000000000000000000" }] 
+      args: [{ name: "spender", placeholder: "0x..." }, { name: "amount in wei(10^18)", placeholder: "e.g. 1000000000000000000" }] 
     }
   ];
   const [maxExposure, setMaxExposure] = useState("0");
@@ -114,12 +114,17 @@ export default function HomePage() {
     args: lastRecId !== undefined ? [lastRecId] : undefined,
   });
 
-  const latestRisk = address && lastRec && lastRec[0].toLowerCase() === address.toLowerCase()
+  const lastRecData = lastRec as any[] | undefined;
+  
+  // Safely grab the user property (checking if it's an array first)
+  const recUser = Array.isArray(lastRecData) ? lastRecData[0] : null;
+
+  const latestRisk = address && recUser && typeof recUser === 'string' && recUser.toLowerCase() === address.toLowerCase()
     ? { 
-        title: lastRec[1], 
-        evaluation: lastRec[2], 
-        riskLevel: Number(lastRec[3]), 
-        timestamp: Number(lastRec[4]) 
+        title: lastRecData![1], 
+        evaluation: lastRecData![2], 
+        riskLevel: Number(lastRecData![3]), 
+        timestamp: Number(lastRecData![4]) 
       } 
     : null;
   const myLatestRecommendationId = latestRisk ? lastRecId : undefined;
@@ -548,8 +553,8 @@ export default function HomePage() {
                 className="input text-sm"
                 type="text"
                 placeholder="Value (wei or MNT)"
-                value={executeValue}
-                onChange={(e) => setExecuteValue(e.target.value)}
+                value={Number(executeValue)/1000000000000000000}
+                onChange={(e) => setExecuteValue((Number(e.target.value) * 1000000000000000000).toString())}
               />
               <div className="space-y-2">
                 <div className="flex gap-2 mb-1">
