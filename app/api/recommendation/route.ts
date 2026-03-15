@@ -6,9 +6,9 @@ const client = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
 
-// Minimal ABI for the Recommendation Log contract
+// Updated ABI to match the new contract structure
 const logAbi = [
-  "function recordRecommendation(address user, bytes32 inputHash, bytes32 summaryHash, uint8 riskLevel) external returns (uint256 id)"
+  "function recordRecommendation(address user, string title, string evaluation, uint8 riskLevel) external returns (uint256 id)"
 ];
 
 export async function POST(req: NextRequest) {
@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
       positionsDescription: manualDescription,
       intendedAction,
       portfolio,
-      userAddress // Make sure to pass the user's wallet address from the frontend
+      userAddress
     } = body;
 
     const hasPortfolio = portfolio?.summary != null && String(portfolio.summary).trim() !== "";
@@ -39,6 +39,7 @@ export async function POST(req: NextRequest) {
       
       Analyze the risk of this action. Return a JSON object strictly matching this format:
       {
+        "title": "<A short 3-5 word title summarizing the action>",
         "riskLevel": <number 1-5>,
         "explanation": "<brief explanation of the risk>",
         "suggestion": "<actionable advice based on the risk>"
@@ -58,9 +59,6 @@ export async function POST(req: NextRequest) {
 
     const result = JSON.parse(content);
 
-    // ==========================================
-    // NEW: Automated Onchain Logging via Relayer
-    // ==========================================
     let txHash = null;
     if (
       userAddress && 
@@ -73,23 +71,20 @@ export async function POST(req: NextRequest) {
         const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
         const logContract = new ethers.Contract(process.env.NEXT_PUBLIC_RECOMMENDATION_LOG_ADDRESS, logAbi, wallet);
 
-        // Hash the inputs and output for privacy
-        const inputStr = positionsDescription + (intendedAction || "");
-        const inputHash = ethers.id(inputStr.length > 0 ? inputStr : "empty-input");
-        const summaryHash = ethers.id(result.explanation || "empty-summary");
+        // Format evaluation string
+        const evaluationStr = `Explanation: ${result.explanation}\n\nSuggestion: ${result.suggestion}`;
         const riskLevel = Number(result.riskLevel) || 0;
+        const title = result.title || "Risk Evaluation";
 
-        // Submit the transaction (we don't wait for it to mine to keep the API fast)
-        const tx = await logContract.recordRecommendation(userAddress, inputHash, summaryHash, riskLevel);
+        // Submit the transaction
+        const tx = await logContract.recordRecommendation(userAddress, title, evaluationStr, riskLevel);
         txHash = tx.hash;
         console.log("Automated recommendation logged. Tx Hash:", txHash);
       } catch (logError) {
         console.error("Failed to execute automated on-chain logging:", logError);
-        // We don't throw here; we still want to return the AI recommendation to the user
       }
     }
 
-    // Return the AI result along with the transaction hash of the log
     return NextResponse.json({ ...result, txHash });
 
   } catch (error) {

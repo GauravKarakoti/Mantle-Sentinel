@@ -26,13 +26,27 @@ export default function HomePage() {
   const chainId = useChainId();
   const { switchChain, isPending: isSwitchPending } = useSwitchChain();
   const { address, isConnected, isConnecting, isReconnecting } = useAccount();
-
+  const PREDEFINED_FUNCTIONS = [
+    { 
+      label: "Transfer (ERC20)", 
+      signature: "function transfer(address to, uint256 amount)", 
+      args: [{ name: "to", placeholder: "0x..." }, { name: "amount", placeholder: "e.g. 1000000000000000000" }] 
+    },
+    { 
+      label: "Approve (ERC20)", 
+      signature: "function approve(address spender, uint256 amount)", 
+      args: [{ name: "spender", placeholder: "0x..." }, { name: "amount", placeholder: "e.g. 1000000000000000000" }] 
+    }
+  ];
   const [maxExposure, setMaxExposure] = useState("0");
   const [maxLeverage, setMaxLeverage] = useState("0");
   const [requireRecLog, setRequireRecLog] = useState(true);
   const [status, setStatus] = useState<string | null>(null);
   const [aiText, setAiText] = useState("");
   const [aiAction, setAiAction] = useState("");
+  const [selectedFuncIndex, setSelectedFuncIndex] = useState(0);
+  const [funcArgValues, setFuncArgValues] = useState<Record<string, string>>({});
+  const [isEvaluationExpanded, setIsEvaluationExpanded] = useState(false);
   const [portfolio, setPortfolio] = useState<{
     summary: string;
     nativeBalanceFormatted: string;
@@ -100,10 +114,14 @@ export default function HomePage() {
     args: lastRecId !== undefined ? [lastRecId] : undefined,
   });
 
-  const latestRisk =
-    address && lastRec && lastRec[0].toLowerCase() === address.toLowerCase()
-      ? { riskLevel: Number(lastRec[3]), timestamp: Number(lastRec[4]) }
-      : null;
+  const latestRisk = address && lastRec && lastRec[0].toLowerCase() === address.toLowerCase()
+    ? { 
+        title: lastRec[1], 
+        evaluation: lastRec[2], 
+        riskLevel: Number(lastRec[3]), 
+        timestamp: Number(lastRec[4]) 
+      } 
+    : null;
   const myLatestRecommendationId = latestRisk ? lastRecId : undefined;
 
   const { data: guardBalance, refetch: refetchGuardBalance } = useReadContract({
@@ -291,13 +309,11 @@ export default function HomePage() {
       }
     } else {
       try {
-        const abiItem = parseAbiItem(funcSignature.trim());
+        const selectedFunc = PREDEFINED_FUNCTIONS[selectedFuncIndex];
+        const abiItem = parseAbiItem(selectedFunc.signature);
         if (!abiItem || abiItem.type !== "function") throw new Error("Invalid signature format");
         
-        // Convert comma-separated string arguments into an array using JSON.parse
-        // (Replaces single quotes with double quotes so users don't get strict JSON errors)
-        const argsString = funcArgs.trim().replace(/'/g, '"');
-        const parsedArgs = argsString ? JSON.parse(`[${argsString}]`) : [];
+        const parsedArgs = selectedFunc.args.map(arg => funcArgValues[arg.name]?.trim() || "");
         
         data = encodeFunctionData({
           abi: [abiItem],
@@ -305,10 +321,11 @@ export default function HomePage() {
           args: parsedArgs,
         });
       } catch (err) {
-        setGuardStatus(`ABI Encoding failed: ${err instanceof Error ? err.message : "Check your signature and arguments."}`);
+        setGuardStatus(`ABI Encoding failed: ${err instanceof Error ? err.message : "Check your arguments."}`);
         return;
       }
     }
+
     const valueWei = executeValue.trim() ? (executeValue.trim().includes(".") ? parseEther(executeValue.trim()) : BigInt(executeValue.trim())) : 0n;
     writeGuardExecute({
       address: SENTINEL_GUARD_ADDRESS,
@@ -563,27 +580,34 @@ export default function HomePage() {
                 ) : (
                   <div className="space-y-3 p-3 bg-slate-800/30 rounded-lg border border-slate-700/50">
                     <div>
-                      <label className="text-xs text-slate-400 mb-1 block">Function Signature</label>
-                      <input
-                        className="input text-sm font-mono"
-                        type="text"
-                        placeholder="e.g. function transfer(address to, uint256 amount)"
-                        value={funcSignature}
-                        onChange={(e) => setFuncSignature(e.target.value)}
-                      />
+                      <label className="text-xs text-slate-400 mb-1 block">Select Function</label>
+                      <select 
+                        className="input text-sm font-mono w-full appearance-none cursor-pointer"
+                        value={selectedFuncIndex}
+                        onChange={(e) => {
+                          setSelectedFuncIndex(Number(e.target.value));
+                          setFuncArgValues({}); // Reset arguments when changing function
+                        }}
+                      >
+                        {PREDEFINED_FUNCTIONS.map((fn, idx) => (
+                          <option key={idx} value={idx}>{fn.label}</option>
+                        ))}
+                      </select>
                     </div>
-                    <div>
-                      <label className="text-xs text-slate-400 mb-1 block">Arguments (comma separated)</label>
-                      <input
-                        className="input text-sm font-mono"
-                        type="text"
-                        placeholder='e.g. "0xYourAddress...", "1000000000000000000"'
-                        value={funcArgs}
-                        onChange={(e) => setFuncArgs(e.target.value)}
-                      />
-                      <p className="text-[10px] text-slate-500 mt-1.5">
-                        Wrap addresses and strings in quotes. Separate multiple arguments with commas.
-                      </p>
+                    
+                    <div className="space-y-2">
+                      {PREDEFINED_FUNCTIONS[selectedFuncIndex].args.map((arg) => (
+                        <div key={arg.name}>
+                          <label className="text-xs text-slate-400 mb-1 block capitalize">{arg.name}</label>
+                          <input
+                            className="input text-sm font-mono"
+                            type="text"
+                            placeholder={arg.placeholder}
+                            value={funcArgValues[arg.name] || ""}
+                            onChange={(e) => setFuncArgValues(prev => ({ ...prev, [arg.name]: e.target.value }))}
+                          />
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}
@@ -756,21 +780,38 @@ export default function HomePage() {
             </div>
 
             {latestRisk ? (
-              <div className="p-4 rounded-lg bg-slate-800/40 border border-slate-700/50 flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-slate-200 mb-1">
-                    Current Evaluation
-                  </p>
-                  <p className="text-xs text-slate-500">
-                    {new Date(latestRisk.timestamp * 1000).toLocaleString()}
-                  </p>
+              <div className="p-4 rounded-lg bg-slate-800/40 border border-slate-700/50 flex flex-col gap-3 transition-all">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-slate-200 mb-1">
+                      {latestRisk.title || "Current Evaluation"}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      {new Date(latestRisk.timestamp * 1000).toLocaleString()}
+                    </p>
+                  </div>
+                  <div className="flex flex-col items-end gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="badge badge-risk">Risk Level</span>
+                      <span className="text-xl font-bold text-slate-200">
+                        {latestRisk.riskLevel}/5
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="badge badge-risk">Risk Level</span>
-                  <span className="text-xl font-bold text-slate-200">
-                    {latestRisk.riskLevel}/5
-                  </span>
-                </div>
+                
+                <button 
+                  onClick={() => setIsEvaluationExpanded(!isEvaluationExpanded)}
+                  className="text-xs text-slate-400 hover:text-slate-200 text-left underline underline-offset-2 w-fit mt-1"
+                >
+                  {isEvaluationExpanded ? "Hide Details" : "View Evaluation"}
+                </button>
+                
+                {isEvaluationExpanded && latestRisk.evaluation && (
+                  <div className="mt-2 p-3 bg-slate-800/60 rounded border border-slate-700/50 text-sm text-slate-300 whitespace-pre-wrap">
+                    {latestRisk.evaluation}
+                  </div>
+                )}
               </div>
             ) : (
               <div className="p-4 rounded-lg bg-slate-800/20 border border-slate-700/50 border-dashed text-center">

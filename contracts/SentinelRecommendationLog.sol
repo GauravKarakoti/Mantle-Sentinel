@@ -4,14 +4,12 @@ pragma solidity ^0.8.24;
 /**
  * @title SentinelRecommendationLog
  * @notice Minimal onchain log of AI recommendations for Mantle Sentinel.
- *         Offchain AI services can submit hashed inputs and summaries to create
- *         an auditable trail tied to user addresses.
  */
 contract SentinelRecommendationLog {
     struct Recommendation {
         address user;
-        bytes32 inputHash;
-        bytes32 summaryHash;
+        string title;
+        string evaluation;
         uint8 riskLevel; // 0 (none) - 5 (very high)
         uint64 timestamp;
     }
@@ -21,41 +19,32 @@ contract SentinelRecommendationLog {
     event RecommendationRecorded(
         uint256 indexed id,
         address indexed user,
-        bytes32 inputHash,
-        bytes32 summaryHash,
+        string title,
         uint8 riskLevel,
         uint64 timestamp
     );
 
-    /**
-     * @notice Record a new recommendation for a user.
-     * @dev Authentication / access control for the AI submitter is intentionally
-     *      left simple for now and can be extended later (e.g. with an allowlist).
-     */
     function recordRecommendation(
         address user,
-        bytes32 inputHash,
-        bytes32 summaryHash,
+        string calldata title,
+        string calldata evaluation,
         uint8 riskLevel
     ) external returns (uint256 id) {
         require(riskLevel <= 5, "invalid risk");
-
         id = _recommendations.length;
         _recommendations.push(
             Recommendation({
                 user: user,
-                inputHash: inputHash,
-                summaryHash: summaryHash,
+                title: title,
+                evaluation: evaluation,
                 riskLevel: riskLevel,
                 timestamp: uint64(block.timestamp)
             })
         );
-
         emit RecommendationRecorded(
             id,
             user,
-            inputHash,
-            summaryHash,
+            title,
             riskLevel,
             uint64(block.timestamp)
         );
@@ -70,4 +59,3 @@ contract SentinelRecommendationLog {
         return _recommendations.length;
     }
 }
-
