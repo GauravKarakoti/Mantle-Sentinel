@@ -69,11 +69,18 @@ export default function HomePage() {
 
   useEffect(() => {
     if (policyData && policyData[0]) {
-      setMaxExposure(policyData[1].toString());
-      setMaxLeverage(policyData[2].toString());
+      // Extract values to local variables first
+      const newMaxExposure = policyData[1].toString();
+      const newMaxLeverage = policyData[2].toString();
+
+      setMaxExposure(newMaxExposure);
+      setMaxLeverage(newMaxLeverage);
       setRequireRecLog(policyData[3]);
-      setExecuteExposureBps(maxExposure);
-      setExecuteLeverageBps(maxLeverage);
+      
+      // Use the local variables, NOT the state variables
+      setExecuteExposureBps(newMaxExposure);
+      setExecuteLeverageBps(newMaxLeverage);
+      
       setStatus("Loaded existing policy from chain.");
     }
   }, [policyData]);
@@ -395,7 +402,7 @@ export default function HomePage() {
                   value={maxExposure}
                   onChange={(e) => {
                     setMaxExposure(e.target.value)
-                    setExecuteExposureBps(maxExposure)
+                    setExecuteExposureBps(e.target.value);
                   }}
                 />
                 <p className="mt-1.5 text-xs text-slate-500">
@@ -414,7 +421,7 @@ export default function HomePage() {
                   value={maxLeverage}
                   onChange={(e) => {
                     setMaxLeverage(e.target.value)
-                    setExecuteLeverageBps(maxLeverage)
+                    setExecuteLeverageBps(e.target.value)
                   }}
                 />
                 <p className="mt-1.5 text-xs text-slate-500">
