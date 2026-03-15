@@ -27,8 +27,8 @@ export default function HomePage() {
   const { switchChain, isPending: isSwitchPending } = useSwitchChain();
   const { address, isConnected, isConnecting, isReconnecting } = useAccount();
 
-  const [maxExposure, setMaxExposure] = useState("2000");
-  const [maxLeverage, setMaxLeverage] = useState("30000");
+  const [maxExposure, setMaxExposure] = useState("0");
+  const [maxLeverage, setMaxLeverage] = useState("0");
   const [requireRecLog, setRequireRecLog] = useState(true);
   const [status, setStatus] = useState<string | null>(null);
   const [aiText, setAiText] = useState("");
@@ -69,6 +69,8 @@ export default function HomePage() {
       setMaxExposure(policyData[1].toString());
       setMaxLeverage(policyData[2].toString());
       setRequireRecLog(policyData[3]);
+      setExecuteExposureBps(maxExposure);
+      setExecuteLeverageBps(maxLeverage);
       setStatus("Loaded existing policy from chain.");
     }
   }, [policyData]);
@@ -102,7 +104,7 @@ export default function HomePage() {
   });
 
   const { sendTransaction: sendDeposit, data: depositTxHash, isPending: isDepositPending } = useSendTransaction();
-  const { isSuccess: isDepositConfirmed } = useWaitForTransactionReceipt({ hash: depositTxHash });
+  const { isLoading: isDepositConfirming, isSuccess: isDepositConfirmed } = useWaitForTransactionReceipt({ hash: depositTxHash });
   useEffect(() => {
     if (isDepositConfirmed) refetchGuardBalance();
   }, [isDepositConfirmed, refetchGuardBalance]);
@@ -363,7 +365,10 @@ export default function HomePage() {
                   min={0}
                   max={10000}
                   value={maxExposure}
-                  onChange={(e) => setMaxExposure(e.target.value)}
+                  onChange={(e) => {
+                    setMaxExposure(e.target.value)
+                    setExecuteExposureBps(maxExposure)
+                  }}
                 />
                 <p className="mt-1.5 text-xs text-slate-500">
                   2000 = 20% exposure cap to any single protocol.
@@ -379,7 +384,10 @@ export default function HomePage() {
                   type="number"
                   min={10000}
                   value={maxLeverage}
-                  onChange={(e) => setMaxLeverage(e.target.value)}
+                  onChange={(e) => {
+                    setMaxLeverage(e.target.value)
+                    setExecuteLeverageBps(maxLeverage)
+                  }}
                 />
                 <p className="mt-1.5 text-xs text-slate-500">
                   30000 = 3x leverage cap across your positions.
@@ -487,9 +495,9 @@ export default function HomePage() {
                 type="button"
                 className="button-primary whitespace-nowrap"
                 onClick={depositToGuard}
-                disabled={isDepositPending || !guardDepositAmount || !isConnected || isWrongChain}
+                disabled={isDepositPending || isDepositConfirming || !guardDepositAmount || !isConnected || isWrongChain}
               >
-                {isDepositPending ? "Depositing…" : "Deposit"}
+                {isDepositPending || isDepositConfirming ? "Depositing…" : "Deposit"}
               </button>
             </div>
             <div className="flex gap-2">

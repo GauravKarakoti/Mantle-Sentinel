@@ -12,7 +12,6 @@ export interface MantleToken {
   decimals: number;
 }
 
-/** Mantle tokens extracted from the official registry (chain IDs 5000 & 5003). */
 export const MANTLE_TOKENS: MantleToken[] = [
   { chainId: 5000, address: "0x96630b0D78d29E7E8d87f8703dE7c14b2d5AE413", name: "ApeX Token", symbol: "APEX", decimals: 18 },
   { chainId: 5000, address: "0x91824fc3573c5043837F6357b72F60014A710501", name: "Aperture", symbol: "APTR", decimals: 6 },
@@ -32,7 +31,6 @@ export const MANTLE_TOKENS: MantleToken[] = [
   { chainId: 5000, address: "0x9e1028F5F1D5eDE59748FFceE5532509976840E0", name: "Equilibria Pendle", symbol: "ePendle", decimals: 18 },
   { chainId: 5000, address: "0x3e7eF8f50246f725885102E8238CBba33F276747", name: "Equilibria Token", symbol: "EQB", decimals: 18 },
   { chainId: 5000, address: "0xdEAddEaDdeadDEadDEADDEAddEADDEAddead1111", name: "Ether", symbol: "ETH", decimals: 18 },
-  { chainId: 5003, address: "0xdEAddEaDdeadDEadDEADDEAddEADDEAddead1111", name: "Ether", symbol: "ETH", decimals: 18 },
   { chainId: 5000, address: "0xC96dE26018A54D51c097160568752c4E3BD6C364", name: "Ignition FBTC", symbol: "FBTC", decimals: 8 },
   { chainId: 5000, address: "0x6eFFF76AcF1698a6a215eCa7D632991678Ec673b", name: "FLOKI", symbol: "FLOKI", decimals: 9 },
   { chainId: 5000, address: "0xFC88835694B1BeFE3506595303e37240F9D6a135", name: "ImpermaxFinance Token", symbol: "IBEX", decimals: 18 },
@@ -42,7 +40,6 @@ export const MANTLE_TOKENS: MantleToken[] = [
   { chainId: 5000, address: "0x60D01EC2D5E98Ac51C8B4cF84DfCCE98D527c747", name: "iZUMi Finance", symbol: "IZI", decimals: 18 },
   { chainId: 5000, address: "0xf93a85d53e4aF0D62bdf3A83CCFc1EcF3EAf9F32", name: "LUSD Stablecoin", symbol: "LUSD", decimals: 18 },
   { chainId: 5000, address: "0xDeadDeAddeAddEAddeadDEaDDEAdDeaDDeAD0000", name: "Mantle", symbol: "MNT", decimals: 18 },
-  { chainId: 5003, address: "0xDeadDeAddeAddEAddeadDEaDDEAdDeaDDeAD0000", name: "Mantle", symbol: "MNT", decimals: 18 },
   { chainId: 5000, address: "0xcDA86A272531e8640cD7F1a92c01839911B90bb0", name: "mETH", symbol: "mETH", decimals: 18 },
   { chainId: 5003, address: "0x9EF6f9160Ba00B6621e5CB3217BB8b54a92B2828", name: "mETH", symbol: "mETH", decimals: 18 },
   { chainId: 5000, address: "0xd27B18915e7acc8FD6Ac75DB6766a80f8D2f5729", name: "PENDLE", symbol: "PENDLE", decimals: 18 },
@@ -59,7 +56,6 @@ export const MANTLE_TOKENS: MantleToken[] = [
   { chainId: 5000, address: "0x779Ded0c9e1022225f8E0630b35a9b54bE713736", name: "USDT0", symbol: "USDT (USDT0)", decimals: 6 },
   { chainId: 5000, address: "0x5bE26527e817998A7206475496fDE1E68957c5A6", name: "Ondo US Dollar Yield", symbol: "USDY", decimals: 18 },
   { chainId: 5000, address: "0xCAbAE6f6Ea1ecaB08Ad02fE02ce9A44F09aebfA2", name: "Wrapped BTC", symbol: "WBTC", decimals: 8 },
-  { chainId: 5000, address: "0xdEAddEaDdeadDEadDEADDEAddEADDEAddead1111", name: "Wrapped ETH", symbol: "WETH", decimals: 18 },
   { chainId: 5000, address: "0x458ed78EB972a369799fb278c0243b25e5242A83", name: "Wrapped liquid staked Ether 2.0", symbol: "wstETH", decimals: 18 },
   { chainId: 5003, address: "0xa4c6370CcF0ec33B785B33E81341727e635aCcd0", name: "Wrapped liquid staked Ether 2.0", symbol: "wstETH", decimals: 18 },
   { chainId: 5000, address: "0x6199CCd9273A1E0e41e2cC18d9dAcd1E9382F58E", name: "XAUt", symbol: "XAUt", decimals: 6 }
@@ -169,9 +165,6 @@ export async function fetchPortfolioFromRpc(
   });
 
   const lines: string[] = [];
-  if (nativeBalance > 0n) {
-    lines.push(`Native MNT: ${nativeBalanceFormatted}`);
-  }
   tokens.forEach((t) => {
     lines.push(`${t.symbol}: ${t.balanceFormatted}`);
   });
