@@ -11,7 +11,7 @@ import {
   useChainId,
   useSwitchChain,
 } from "wagmi";
-import { parseEther } from "viem";
+import { parseEther, encodeFunctionData, parseAbiItem } from "viem";
 import {
   POLICY_REGISTRY_ADDRESS,
   RECOMMENDATION_LOG_ADDRESS,
@@ -50,8 +50,11 @@ export default function HomePage() {
   const [executeTarget, setExecuteTarget] = useState("");
   const [executeValue, setExecuteValue] = useState("");
   const [executeData, setExecuteData] = useState("0x");
-  const [executeExposureBps, setExecuteExposureBps] = useState("2000");
-  const [executeLeverageBps, setExecuteLeverageBps] = useState("30000");
+  const [calldataMode, setCalldataMode] = useState<"raw" | "encode">("raw");
+  const [funcSignature, setFuncSignature] = useState("function transfer(address to, uint256 amount)");
+  const [funcArgs, setFuncArgs] = useState("");
+  const [executeExposureBps, setExecuteExposureBps] = useState(maxExposure);
+  const [executeLeverageBps, setExecuteLeverageBps] = useState(maxLeverage);
   const [guardStatus, setGuardStatus] = useState<string | null>(null);
 
   const isWrongChain = isConnected && chainId !== mantle.id;
@@ -218,7 +221,11 @@ export default function HomePage() {
         portfolio?: { summary: string };
         positionsDescription?: string;
         intendedAction: string;
-      } = { intendedAction: aiAction };
+        userAddress?: string;
+      } = { 
+        intendedAction: aiAction,
+        userAddress: address
+      };
       if (portfolioData) {
         body.portfolio = portfolioData;
         if (aiText.trim()) body.positionsDescription = `Additional context: ${aiText.trim()}`;
@@ -265,14 +272,35 @@ export default function HomePage() {
     if (!executeTarget || !address) return;
     setGuardStatus(null);
     let data: `0x${string}` = "0x";
-    try {
-      if (executeData.trim() && executeData.trim() !== "0x") {
-        data = executeData.trim() as `0x${string}`;
-        if (!data.startsWith("0x")) data = `0x${data}` as `0x${string}`;
+    if (calldataMode === "raw") {
+      try {
+        if (executeData.trim() && executeData.trim() !== "0x") {
+          data = executeData.trim() as `0x${string}`;
+          if (!data.startsWith("0x")) data = `0x${data}` as `0x${string}`;
+        }
+      } catch {
+        setGuardStatus("Invalid calldata hex.");
+        return;
       }
-    } catch {
-      setGuardStatus("Invalid calldata hex.");
-      return;
+    } else {
+      try {
+        const abiItem = parseAbiItem(funcSignature.trim());
+        if (!abiItem || abiItem.type !== "function") throw new Error("Invalid signature format");
+        
+        // Convert comma-separated string arguments into an array using JSON.parse
+        // (Replaces single quotes with double quotes so users don't get strict JSON errors)
+        const argsString = funcArgs.trim().replace(/'/g, '"');
+        const parsedArgs = argsString ? JSON.parse(`[${argsString}]`) : [];
+        
+        data = encodeFunctionData({
+          abi: [abiItem],
+          functionName: abiItem.name,
+          args: parsedArgs,
+        });
+      } catch (err) {
+        setGuardStatus(`ABI Encoding failed: ${err instanceof Error ? err.message : "Check your signature and arguments."}`);
+        return;
+      }
     }
     const valueWei = executeValue.trim() ? (executeValue.trim().includes(".") ? parseEther(executeValue.trim()) : BigInt(executeValue.trim())) : 0n;
     writeGuardExecute({
@@ -424,47 +452,7 @@ export default function HomePage() {
               )}
             </div>
           </section>
-
-          <section className="card p-6 md:p-8 space-y-4">
-            <div>
-              <h2 className="text-xl font-semibold mb-2">Latest AI Snapshot</h2>
-              <p className="text-sm text-slate-400">
-                Reads from{" "}
-                <code className="text-blue-400 bg-blue-400/10 px-1 rounded">
-                  SentinelRecommendationLog
-                </code>
-                .
-              </p>
-            </div>
-
-            {latestRisk ? (
-              <div className="p-4 rounded-lg bg-slate-800/40 border border-slate-700/50 flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-slate-200 mb-1">
-                    Current Evaluation
-                  </p>
-                  <p className="text-xs text-slate-500">
-                    {new Date(latestRisk.timestamp * 1000).toLocaleString()}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="badge badge-risk">Risk Level</span>
-                  <span className="text-xl font-bold text-slate-200">
-                    {latestRisk.riskLevel}/5
-                  </span>
-                </div>
-              </div>
-            ) : (
-              <div className="p-4 rounded-lg bg-slate-800/20 border border-slate-700/50 border-dashed text-center">
-                <p className="text-sm text-slate-500">
-                  {isConnected
-                    ? "No AI recommendations logged for your address yet."
-                    : "Connect your wallet to see your latest recommendation."}
-                </p>
-              </div>
-            )}
-          </section>
-
+          
           <section className="card p-6 md:p-8 space-y-4">
             <div>
               <h2 className="text-xl font-semibold mb-2">Sentinel Guard (Proxy)</h2>
@@ -539,13 +527,60 @@ export default function HomePage() {
                 value={executeValue}
                 onChange={(e) => setExecuteValue(e.target.value)}
               />
-              <input
-                className="input text-sm font-mono"
-                type="text"
-                placeholder="Calldata (0x...)"
-                value={executeData}
-                onChange={(e) => setExecuteData(e.target.value)}
-              />
+              <div className="space-y-2">
+                <div className="flex gap-2 mb-1">
+                  <button
+                    type="button"
+                    className={`text-xs px-3 py-1.5 rounded transition-colors ${calldataMode === "raw" ? "bg-slate-700 text-white" : "text-slate-400 hover:text-slate-200 bg-slate-800/50"}`}
+                    onClick={() => setCalldataMode("raw")}
+                  >
+                    Raw Calldata
+                  </button>
+                  <button
+                    type="button"
+                    className={`text-xs px-3 py-1.5 rounded transition-colors ${calldataMode === "encode" ? "bg-slate-700 text-white" : "text-slate-400 hover:text-slate-200 bg-slate-800/50"}`}
+                    onClick={() => setCalldataMode("encode")}
+                  >
+                    ABI Encoder
+                  </button>
+                </div>
+
+                {calldataMode === "raw" ? (
+                  <input
+                    className="input text-sm font-mono"
+                    type="text"
+                    placeholder="Calldata (0x...)"
+                    value={executeData}
+                    onChange={(e) => setExecuteData(e.target.value)}
+                  />
+                ) : (
+                  <div className="space-y-3 p-3 bg-slate-800/30 rounded-lg border border-slate-700/50">
+                    <div>
+                      <label className="text-xs text-slate-400 mb-1 block">Function Signature</label>
+                      <input
+                        className="input text-sm font-mono"
+                        type="text"
+                        placeholder="e.g. function transfer(address to, uint256 amount)"
+                        value={funcSignature}
+                        onChange={(e) => setFuncSignature(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-slate-400 mb-1 block">Arguments (comma separated)</label>
+                      <input
+                        className="input text-sm font-mono"
+                        type="text"
+                        placeholder='e.g. "0xYourAddress...", "1000000000000000000"'
+                        value={funcArgs}
+                        onChange={(e) => setFuncArgs(e.target.value)}
+                      />
+                      <p className="text-[10px] text-slate-500 mt-1.5">
+                        Wrap addresses and strings in quotes. Separate multiple arguments with commas.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
               <div className="flex gap-2">
                 <input
                   className="input flex-1 text-sm"
@@ -698,6 +733,45 @@ export default function HomePage() {
                   </p>
                   <p className="text-sm text-slate-300">{aiResponse.suggestion}</p>
                 </div>
+              </div>
+            )}
+          </section>
+          <section className="card p-6 md:p-8 space-y-4">
+            <div>
+              <h2 className="text-xl font-semibold mb-2">Latest AI Snapshot</h2>
+              <p className="text-sm text-slate-400">
+                Reads from{" "}
+                <code className="text-blue-400 bg-blue-400/10 px-1 rounded">
+                  SentinelRecommendationLog
+                </code>
+                .
+              </p>
+            </div>
+
+            {latestRisk ? (
+              <div className="p-4 rounded-lg bg-slate-800/40 border border-slate-700/50 flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-slate-200 mb-1">
+                    Current Evaluation
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    {new Date(latestRisk.timestamp * 1000).toLocaleString()}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="badge badge-risk">Risk Level</span>
+                  <span className="text-xl font-bold text-slate-200">
+                    {latestRisk.riskLevel}/5
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <div className="p-4 rounded-lg bg-slate-800/20 border border-slate-700/50 border-dashed text-center">
+                <p className="text-sm text-slate-500">
+                  {isConnected
+                    ? "No AI recommendations logged for your address yet."
+                    : "Connect your wallet to see your latest recommendation."}
+                </p>
               </div>
             )}
           </section>
