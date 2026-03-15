@@ -114,17 +114,14 @@ export default function HomePage() {
     args: lastRecId !== undefined ? [lastRecId] : undefined,
   });
 
-  const lastRecData = lastRec as any[] | undefined;
-  
-  // Safely grab the user property (checking if it's an array first)
-  const recUser = Array.isArray(lastRecData) ? lastRecData[0] : null;
+  const lastRecData = lastRec as any;
 
-  const latestRisk = address && recUser && typeof recUser === 'string' && recUser.toLowerCase() === address.toLowerCase()
+  const latestRisk = address && lastRecData && lastRecData.user.toLowerCase() === address.toLowerCase()
     ? { 
-        title: lastRecData![1], 
-        evaluation: lastRecData![2], 
-        riskLevel: Number(lastRecData![3]), 
-        timestamp: Number(lastRecData![4]) 
+        title: lastRecData.title, 
+        evaluation: lastRecData.evaluation, 
+        riskLevel: Number(lastRecData.riskLevel), 
+        timestamp: Number(lastRecData.timestamp) 
       } 
     : null;
   const myLatestRecommendationId = latestRisk ? lastRecId : undefined;

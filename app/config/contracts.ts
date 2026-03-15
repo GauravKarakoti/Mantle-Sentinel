@@ -38,25 +38,56 @@ export const policyRegistryAbi = [
 
 export const recommendationLogAbi = [
   {
-    name: "totalRecommendations",
-    type: "function",
-    stateMutability: "view",
-    inputs: [],
-    outputs: [{ name: "", type: "uint256" }],
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: "uint256", name: "id", type: "uint256" },
+      { indexed: true, internalType: "address", name: "user", type: "address" },
+      { indexed: false, internalType: "string", name: "title", type: "string" },
+      { indexed: false, internalType: "uint8", name: "riskLevel", type: "uint8" },
+      { indexed: false, internalType: "uint64", name: "timestamp", type: "uint64" }
+    ],
+    name: "RecommendationRecorded",
+    type: "event"
   },
   {
+    inputs: [{ internalType: "uint256", name: "id", type: "uint256" }],
     name: "getRecommendation",
-    type: "function",
-    stateMutability: "view",
-    inputs: [{ name: "id", type: "uint256" }],
     outputs: [
-      { name: "user", type: "address" },
-      { name: "inputHash", type: "bytes32" },
-      { name: "summaryHash", type: "bytes32" },
-      { name: "riskLevel", type: "uint8" },
-      { name: "timestamp", type: "uint64" },
+      {
+        components: [
+          { internalType: "address", name: "user", type: "address" },
+          { internalType: "string", name: "title", type: "string" },
+          { internalType: "string", name: "evaluation", type: "string" },
+          { internalType: "uint8", name: "riskLevel", type: "uint8" },
+          { internalType: "uint64", name: "timestamp", type: "uint64" }
+        ],
+        internalType: "struct SentinelRecommendationLog.Recommendation",
+        name: "",
+        type: "tuple"
+      }
     ],
+    stateMutability: "view",
+    type: "function"
   },
+  {
+    inputs: [
+      { internalType: "address", name: "user", type: "address" },
+      { internalType: "string", name: "title", type: "string" },
+      { internalType: "string", name: "evaluation", type: "string" },
+      { internalType: "uint8", name: "riskLevel", type: "uint8" }
+    ],
+    name: "recordRecommendation",
+    outputs: [{ internalType: "uint256", name: "id", type: "uint256" }],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [],
+    name: "totalRecommendations",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function"
+  }
 ] as const;
 
 export const sentinelGuardAbi = [
